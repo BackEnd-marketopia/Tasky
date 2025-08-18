@@ -92,20 +92,40 @@
                                 <div class="col-md-{{$project->note ? '7' : '6'}} mb-3">
                                     <label class="form-label"><?= get_label('status', 'Status') ?></label>
                                     <div class="d-flex align-items-center">
-                                        <select class="form-select form-select-sm select-bg-label-{{$project->status->color}}" id="statusSelect" data-id="{{ $project->id }}" data-original-status-id="{{$project->status->id}}" data-original-color-class="select-bg-label-{{$project->status->color}}">
+                                        <select 
+                                            class="form-select form-select-sm select-bg-label-{{ $project?->status?->color ?? 'default' }}" 
+                                            id="statusSelect" 
+                                            data-id="{{ $project?->id ?? 0 }}" 
+                                            data-original-status-id="{{ $project?->status?->id ?? 0 }}" 
+                                            data-original-color-class="select-bg-label-{{ $project?->status?->color ?? 'default' }}"
+                                        >
                                             @foreach($statuses as $status)
-                                            @php
-                                            $disabled = canSetStatus($status) ? '' : 'disabled';
-                                            @endphp
-                                            <option value="{{ $status->id }}" class="badge bg-label-{{ $status->color }}" {{ $project->status->id == $status->id ? 'selected' : '' }} {{ $disabled }}>
-                                                {{ $status->title }}
-                                            </option>
+                                                @php
+                                                    $disabled = canSetStatus($status) ? '' : 'disabled';
+                                                    $isSelected = ($project?->status?->id === $status->id) ? 'selected' : '';
+                                                @endphp
+                                                <option 
+                                                    value="{{ $status->id }}" 
+                                                    class="badge bg-label-{{ $status->color }}" 
+                                                    {{ $isSelected }} 
+                                                    {{ $disabled }}
+                                                >
+                                                    {{ $status->title }}
+                                                </option>
                                             @endforeach
                                         </select>
-                                        @if($project->note)
-                                        <i class="bx bx-notepad ms-1 text-primary" data-bs-toggle="tooltip" data-bs-offset="0,4" data-bs-placement="top" data-bs-original-title="{{$project->note}}"></i>
+                                    
+                                        @if(!empty($project?->note))
+                                            <i 
+                                                class="bx bx-notepad ms-1 text-primary" 
+                                                data-bs-toggle="tooltip" 
+                                                data-bs-offset="0,4" 
+                                                data-bs-placement="top" 
+                                                data-bs-original-title="{{ $project->note }}"
+                                            ></i>
                                         @endif
                                     </div>
+
                                 </div>
                                 <div class="col-md-{{$project->note ? '5' : '6'}} mb-3">
                                     <label for="prioritySelect" class="form-label"><?= get_label('priority', 'Priority') ?></label>
