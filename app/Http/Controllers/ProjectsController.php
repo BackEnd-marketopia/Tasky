@@ -497,7 +497,66 @@ class ProjectsController extends Controller
         $projectTags = $project->tags;
         $types = getControllerNames();
         $comments = $project->comments;
-        return view('projects.project_information', ['project' => $project, 'projectTags' => $projectTags, 'types' => $types, 'auth_user' => $this->user, 'comments' => $comments]);
+        
+        // Package Goals Analytics for Project
+        $packageGoalsAnalytics = $this->getProjectPackageGoalsAnalytics($project);
+        
+        return view('projects.project_information', [
+            'project' => $project, 
+            'projectTags' => $projectTags, 
+            'types' => $types, 
+            'auth_user' => $this->user, 
+            'comments' => $comments,
+            'packageGoalsAnalytics' => $packageGoalsAnalytics
+        ]);
+    }
+    
+    /**
+     * Get Package Goals Analytics for a specific project
+     */
+    private function getProjectPackageGoalsAnalytics($project)
+    {
+        // Get all tasks in this project that have package goals
+        $tasksWithGoals = $project->tasks()->whereNotNull('package_goal_id')->with(['packageGoal.packageType'])->get();
+        
+        if ($tasksWithGoals->isEmpty()) {
+            return null;
+        }
+        
+        // Group tasks by package goal
+        $goalGroups = $tasksWithGoals->groupBy('package_goal_id');
+        $analytics = [];
+        
+        foreach ($goalGroups as $packageGoalId => $tasks) {
+            $firstTask = $tasks->first();
+            $packageGoal = $firstTask->packageGoal;
+            
+            // Calculate totals for this goal across all project tasks
+            $totalProgress = $tasks->sum('progress_count');
+            $targetCount = $packageGoal->target_count;
+            $progressPercentage = $targetCount > 0 ? round(($totalProgress / $targetCount) * 100, 2) : 0;
+            
+            $analytics[] = [
+                'package_goal' => $packageGoal,
+                'tasks_count' => $tasks->count(),
+                'tasks' => $tasks,
+                'total_progress' => $totalProgress,
+                'target_count' => $targetCount,
+                'remaining_count' => max(0, $targetCount - $totalProgress),
+                'progress_percentage' => $progressPercentage,
+                'status' => $progressPercentage >= 100 ? 'completed' : 
+                           ($progressPercentage >= 75 ? 'excellent' : 
+                           ($progressPercentage >= 50 ? 'good' : 
+                           ($progressPercentage >= 25 ? 'behind' : 'getting_started')))
+            ];
+        }
+        
+        // Sort by progress percentage (highest first)
+        usort($analytics, function($a, $b) {
+            return $b['progress_percentage'] <=> $a['progress_percentage'];
+        });
+        
+        return $analytics;
     }
     public function get($projectId)
     {

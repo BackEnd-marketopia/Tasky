@@ -142,6 +142,133 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Package Goals Analytics Section -->
+                @if($packageGoalsAnalytics && count($packageGoalsAnalytics) > 0)
+                <hr class="my-0" />
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12 mb-4">
+                            <div class="card border-info">
+                                <div class="card-header bg-gradient-info text-white">
+                                    <h5 class="mb-0">
+                                        <i class="bx bx-target-lock me-2"></i>
+                                        {{ get_label('package_goals_progress', 'Package Goals Progress') }}
+                                    </h5>
+                                    <small class="opacity-75">{{ count($packageGoalsAnalytics) }} {{ get_label('active_goals', 'Active Goals') }} in this project</small>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-4">
+                                        @foreach($packageGoalsAnalytics as $analytics)
+                                        <div class="col-md-6 col-lg-4">
+                                            <div class="card h-100 border-0 shadow-sm">
+                                                <div class="card-body">
+                                                    <!-- Goal Header -->
+                                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                                        <span class="badge rounded-pill px-3 py-2" style="background-color: {{ $analytics['package_goal']->packageType->color ?? '#6B7280' }}; color: white; font-size: 0.75rem;">
+                                                            <i class="bx bx-package me-1"></i>{{ $analytics['package_goal']->packageType->name ?? 'Unknown' }}
+                                                        </span>
+                                                        <span class="fw-semibold" style="color: #6c757d; font-size: 0.875rem;">{{ $analytics['tasks_count'] }} {{ get_label('tasks', 'Tasks') }}</span>
+                                                    </div>
+                                                    
+                                                    <h6 class="card-title mb-3 fw-bold" style="color: #212529; font-size: 1rem;">{{ $analytics['package_goal']->title }}</h6>
+                                                    
+                                                    <!-- Progress Stats -->
+                                                    <div class="row g-2 mb-3 text-center">
+                                                        <div class="col-4">
+                                                            <div class="p-3 rounded" style="background-color: rgba(25, 135, 84, 0.1); border: 1px solid rgba(25, 135, 84, 0.3);">
+                                                                <div class="fs-5 fw-bold" style="color: #198754;">{{ $analytics['total_progress'] }}</div>
+                                                                <div class="fw-semibold" style="color: #198754; font-size: 0.875rem;">{{ get_label('current', 'Current') }}</div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <div class="p-3 rounded" style="background-color: rgba(13, 110, 253, 0.1); border: 1px solid rgba(13, 110, 253, 0.3);">
+                                                                <div class="fs-5 fw-bold" style="color: #0d6efd;">{{ $analytics['target_count'] }}</div>
+                                                                <div class="fw-semibold" style="color: #0d6efd; font-size: 0.875rem;">{{ get_label('target', 'Target') }}</div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <div class="p-3 rounded" style="background-color: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3);">
+                                                                <div class="fs-5 fw-bold" style="color: #ffc107;">{{ $analytics['remaining_count'] }}</div>
+                                                                <div class="fw-semibold" style="color: #ffc107; font-size: 0.875rem;">{{ get_label('remaining', 'Remaining') }}</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Progress Bar -->
+                                                    @php
+                                                        $percentage = $analytics['progress_percentage'];
+                                                        $barColorHex = $percentage >= 100 ? '#198754' : 
+                                                                      ($percentage >= 75 ? '#0d6efd' : 
+                                                                      ($percentage >= 50 ? '#0dcaf0' : 
+                                                                      ($percentage >= 25 ? '#ffc107' : '#dc3545')));
+                                                    @endphp
+                                                    <div class="progress mb-2" style="height: 15px;">
+                                                        <div class="progress-bar" role="progressbar" 
+                                                             style="width: {{ $percentage }}%; background-color: {{ $barColorHex }};" 
+                                                             aria-valuenow="{{ $percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <span class="fs-6 fw-bold" style="color: #212529; font-size: 1.1rem;">{{ $percentage }}%</span>
+                                                        <span class="badge px-3 py-2" style="background-color: 
+                                                            @if($analytics['status'] == 'completed') #198754
+                                                            @elseif($analytics['status'] == 'excellent') #0d6efd  
+                                                            @elseif($analytics['status'] == 'good') #0dcaf0
+                                                            @elseif($analytics['status'] == 'behind') #ffc107
+                                                            @else #6c757d @endif; color: white; font-size: 0.8rem;">
+                                                            @if($analytics['status'] == 'completed')
+                                                                <i class="bx bx-check me-1"></i>{{ get_label('completed', 'Completed') }}
+                                                            @elseif($analytics['status'] == 'excellent')
+                                                                <i class="bx bx-trending-up me-1"></i>{{ get_label('excellent', 'Excellent') }}
+                                                            @elseif($analytics['status'] == 'good')
+                                                                <i class="bx bx-trending-up me-1"></i>{{ get_label('good', 'Good') }}
+                                                            @elseif($analytics['status'] == 'behind')
+                                                                <i class="bx bx-time-five me-1"></i>{{ get_label('behind', 'Behind') }}
+                                                            @else
+                                                                <i class="bx bx-play-circle me-1"></i>{{ get_label('getting_started', 'Getting Started') }}
+                                                            @endif
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    <!-- Tasks List -->
+                                                    <div class="mt-3 pt-3 border-top">
+                                                        <div class="fw-semibold mb-2" style="color: #495057; font-size: 0.875rem;">{{ get_label('related_tasks', 'Related Tasks') }}:</div>
+                                                        <div class="d-flex flex-wrap gap-2">
+                                                            @foreach($analytics['tasks']->take(3) as $task)
+                                                            <a href="{{ url('tasks/information/' . $task->id) }}" class="badge text-decoration-none px-2 py-1" 
+                                                               style="background-color: #f8f9fa; color: #495057; border: 1px solid #dee2e6;" 
+                                                               title="{{ $task->title }}">
+                                                                <i class="bx bx-task me-1"></i>{{ Str::limit($task->title, 15) }}
+                                                            </a>
+                                                            @endforeach
+                                                            @if($analytics['tasks']->count() > 3)
+                                                            <span class="badge px-2 py-1" style="background-color: #6c757d; color: white;">
+                                                                +{{ $analytics['tasks']->count() - 3 }} {{ get_label('more', 'more') }}
+                                                            </span>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                    
+                                    <!-- View All Analytics Button -->
+                                    <div class="text-center mt-4">
+                                        <a href="{{ url('package-goals/analytics') }}" class="btn btn-info">
+                                            <i class="bx bx-line-chart me-1"></i>
+                                            {{ get_label('view_detailed_analytics', 'View Detailed Analytics') }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+                
                 <hr class="my-0" />
                 <div class="card-body">
                     <div class="row">

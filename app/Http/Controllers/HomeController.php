@@ -49,7 +49,19 @@ class HomeController extends Controller
         } else {
             $activities = collect(); // Return an empty collection to avoid errors
         }
-        return view('dashboard', ['users' => $users, 'clients' => $clients, 'projects' => $projects, 'tasks' => $tasks, 'todos' => $todos, 'total_todos' => $total_todos, 'meetings' => $meetings, 'auth_user' => $this->user,'activities' => $activities]);
+        // Package statistics
+        $packageTypes = [];
+        $packageGoals = [];
+        if ($this->user->can('manage_projects')) {
+            $packageTypes = \App\Models\PackageType::where('workspace_id', getWorkspaceId())
+                ->where('is_active', 1)
+                ->get();
+            $packageGoals = \App\Models\PackageGoal::where('workspace_id', getWorkspaceId())
+                ->with('packageType')
+                ->get();
+        }
+        
+        return view('dashboard', ['users' => $users, 'clients' => $clients, 'projects' => $projects, 'tasks' => $tasks, 'todos' => $todos, 'total_todos' => $total_todos, 'meetings' => $meetings, 'auth_user' => $this->user,'activities' => $activities, 'packageTypes' => $packageTypes, 'packageGoals' => $packageGoals]);
     }
 
     public function upcoming_birthdays()

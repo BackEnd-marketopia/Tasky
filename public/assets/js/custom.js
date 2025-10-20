@@ -3267,6 +3267,12 @@ $(document).on("click", ".edit-task", function () {
             $("#title").val(response.task.title);
             $("#task_status_id").val(response.task.status_id).trigger("change");
             $("#priority_id").val(response.task.priority_id).trigger("change");
+            // Set package type if available
+            if (response.task.package_type_id) {
+                $("#update_package_type_id").val(response.task.package_type_id).trigger("change");
+            } else {
+                $("#update_package_type_id").val('').trigger("change");
+            }
             // Initialize task list select2
             var editTaskList = $("#edit_task_list");
             editTaskList.select2({

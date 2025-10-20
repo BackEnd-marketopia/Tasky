@@ -2457,6 +2457,22 @@ if (!function_exists('formatTask')) {
             'favorite' => getFavoriteStatus($task->id, \App\Models\Task::class),
             'pinned' => getPinnedStatus($task->id, \App\Models\Task::class),
             'client_can_discuss' => $task->client_can_discuss,
+            'package_goal_id' => $task->package_goal_id,
+            'progress_count' => $task->progress_count ?? 0,
+            'package_goal' => $task->packageGoal ? [
+                'id' => $task->packageGoal->id,
+                'title' => $task->packageGoal->title,
+                'target_count' => $task->packageGoal->target_count,
+                'package_type' => $task->packageGoal->packageType ? $task->packageGoal->packageType->name : null,
+                'description' => $task->packageGoal->description,
+            ] : null,
+            'progress_analysis' => $task->packageGoal ? [
+                'progress_percentage' => $task->progress_percentage,
+                'remaining_count' => $task->remaining_count,
+                'is_goal_completed' => $task->is_goal_completed,
+                'target_count' => $task->packageGoal->target_count,
+                'completed_count' => $task->progress_count ?? 0,
+            ] : null,
             'created_at' => format_date($task->created_at, to_format: 'Y-m-d'),
             'updated_at' => format_date($task->updated_at, to_format: 'Y-m-d'),
         ];
@@ -3120,6 +3136,7 @@ if (!function_exists('getMenus')) {
                         'class' => 'menu-item' . (Request::is('tags/*') ? ' active' : ''),
                         'show' => ($user->can('manage_tags')) ? 1 : 0
                     ],
+
                     [
                         'id' => 'task-lists',
                         'label' => get_label('task_lists', 'Task lists'),
@@ -3178,6 +3195,38 @@ if (!function_exists('getMenus')) {
                 'class' => 'menu-item' . (Request::is('priority/manage') ? ' active' : ''),
                 'show' => $user->can('manage_priorities') ? 1 : 0,
                 'category' => 'projects_and_task_management',
+            ],
+            [
+                'id' => 'packages',
+                'label' => get_label('packages', 'Packages'),
+                'url' => 'javascript:void(0)',
+                'icon' => 'bx bx-package',
+                'class' => 'menu-item' . (Request::is('package-types') || Request::is('package-types/*') || Request::is('package-goals') || Request::is('package-goals/*') || Request::is('package-goals/analytics') ? ' active open' : ''),
+                'show' => $user->can('manage_projects') ? 1 : 0,
+                'category' => 'packages',
+                'submenus' => [
+                    [
+                        'id' => 'package_types',
+                        'label' => get_label('package_types', 'Package Types'),
+                        'url' => url('/package-types'),
+                        'class' => 'menu-item' . (Request::is('package-types') || Request::is('package-types/*') ? ' active' : ''),
+                        'show' => ($user->can('manage_projects')) ? 1 : 0
+                    ],
+                    [
+                        'id' => 'package_goals',
+                        'label' => get_label('package_goals', 'Package Goals'),
+                        'url' => url('/package-goals'),
+                        'class' => 'menu-item' . (Request::is('package-goals') && !Request::is('package-goals/analytics') ? ' active' : ''),
+                        'show' => ($user->can('manage_projects')) ? 1 : 0
+                    ],
+                    [
+                        'id' => 'package_goals_analytics',
+                        'label' => get_label('package_goals_analytics', 'Analytics'),
+                        'url' => url('/package-goals/analytics'),
+                        'class' => 'menu-item' . (Request::is('package-goals/analytics') ? ' active' : ''),
+                        'show' => ($user->can('manage_projects')) ? 1 : 0
+                    ],
+                ],
             ],
             [
                 'id' => 'workspaces',

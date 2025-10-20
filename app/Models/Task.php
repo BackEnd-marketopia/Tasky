@@ -32,7 +32,9 @@ class Task extends Model implements HasMedia
         'parent_id' ,
         'billing_type',
         'completion_percentage',
-        'task_list_id'
+        'task_list_id',
+        'package_goal_id',
+        'progress_count'
     ];
 
     public function registerMediaCollections(): void
@@ -152,5 +154,46 @@ class Task extends Model implements HasMedia
     public function timeEntries()
     {
         return $this->hasMany(TaskTimeEntry::class);
+    }
+
+    public function packageGoal()
+    {
+        return $this->belongsTo(PackageGoal::class);
+    }
+
+    /**
+     * Get progress percentage for this task based on package goal
+     */
+    public function getProgressPercentageAttribute()
+    {
+        if (!$this->packageGoal || $this->packageGoal->target_count == 0) {
+            return 0;
+        }
+
+        return round(($this->progress_count / $this->packageGoal->target_count) * 100, 2);
+    }
+
+    /**
+     * Get remaining count for this task based on package goal
+     */
+    public function getRemainingCountAttribute()
+    {
+        if (!$this->packageGoal) {
+            return 0;
+        }
+
+        return max(0, $this->packageGoal->target_count - $this->progress_count);
+    }
+
+    /**
+     * Check if task goal is completed
+     */
+    public function getIsGoalCompletedAttribute()
+    {
+        if (!$this->packageGoal) {
+            return false;
+        }
+
+        return $this->progress_count >= $this->packageGoal->target_count;
     }
 }

@@ -204,6 +204,8 @@ class TasksController extends Controller
             'billing_type' => 'nullable|in:none,billable,non-billable',
             'completion_percentage' => ['nullable', 'integer', 'min:0', 'max:100', 'in:0,10,20,30,40,50,60,70,80,90,100'],
             'task_list_id' => 'nullable|exists:task_lists,id',
+            'package_goal_id' => 'nullable|exists:package_goals,id',
+            'progress_count' => 'nullable|integer|min:0',
         ];
         $messages = [
             'status_id.required' => 'The status field is required.'
@@ -2774,6 +2776,160 @@ class TasksController extends Controller
             return response()->json([
                 "error" => true,
                 "message" => "Could not retrieve status timelines."
+            ], 500);
+        }
+    }
+
+    /**
+     * Get package goals by package type for the current workspace
+     */
+    public function getPackageGoalsByType(Request $request)
+    {
+        try {
+            $packageTypeId = $request->get('package_type_id');
+            
+            if (!$packageTypeId) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Package type ID is required.'
+                ], 400);
+            }
+
+            $packageGoals = \App\Models\PackageGoal::where('package_type_id', $packageTypeId)
+                ->where('workspace_id', getWorkspaceId())
+                ->where('is_active', true)
+                ->with('packageType')
+                ->get()
+                ->map(function ($goal) {
+                    return [
+                        'id' => $goal->id,
+                        'title' => $goal->title,
+                        'description' => $goal->description,
+                        'target_count' => $goal->target_count,
+                        'completed_count' => $goal->completed_tasks_count,
+                        'remaining_count' => $goal->remaining_tasks_count,
+                        'completion_percentage' => $goal->completion_percentage,
+                        'package_type' => $goal->packageType ? $goal->packageType->name : null,
+                    ];
+                });
+
+            return response()->json([
+                'error' => false,
+                'message' => 'Package goals retrieved successfully.',
+                'data' => $packageGoals
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Could not retrieve package goals.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all package types for the current workspace
+     */
+    public function getPackageTypes(Request $request)
+    {
+        try {
+            $packageTypes = \App\Models\PackageType::where('workspace_id', getWorkspaceId())
+                ->where('is_active', true)
+                ->orderBy('name', 'asc')
+                ->get()
+                ->map(function ($type) {
+                    return [
+                        'id' => $type->id,
+                        'name' => $type->name,
+                        'icon' => $type->icon,
+                        'color' => $type->color,
+                        'description' => $type->description,
+                    ];
+                });
+
+            return response()->json([
+                'error' => false,
+                'message' => 'Package types retrieved successfully.',
+                'data' => $packageTypes
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Could not retrieve package types.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Update progress count for a task
+     */
+    public function updateProgressCount(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'task_id' => 'required|exists:tasks,id',
+                'progress_count' => 'nullable|integer|min:0',
+                'increment' => 'nullable|integer',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Validation failed.',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $task = Task::findOrFail($request->task_id);
+            
+            // Determine new progress count
+            if ($request->has('increment')) {
+                $newProgressCount = ($task->progress_count ?? 0) + $request->increment;
+            } else {
+                $newProgressCount = $request->progress_count;
+            }
+            
+            // Ensure progress count is not negative
+            $newProgressCount = max(0, $newProgressCount);
+            
+            // Check if task has package goal and validate progress count
+            if ($task->package_goal_id && $task->packageGoal) {
+                $maxProgress = $task->packageGoal->target_count;
+                if ($newProgressCount > $maxProgress) {
+                    return response()->json([
+                        'error' => true,
+                        'message' => "Progress count cannot exceed the goal target ({$maxProgress})."
+                    ], 422);
+                }
+            }
+
+            $task->update(['progress_count' => $newProgressCount]);
+
+            // Calculate progress percentage
+            $progressPercentage = 0;
+            if ($task->packageGoal && $task->packageGoal->target_count > 0) {
+                $progressPercentage = round(($newProgressCount / $task->packageGoal->target_count) * 100, 2);
+            }
+
+            return response()->json([
+                'error' => false,
+                'success' => true,
+                'message' => 'Progress count updated successfully.',
+                'data' => [
+                    'task_id' => $task->id,
+                    'current_progress' => $newProgressCount,
+                    'progress_count' => $newProgressCount,
+                    'progress_percentage' => $progressPercentage,
+                    'remaining_count' => $task->packageGoal ? max(0, $task->packageGoal->target_count - $newProgressCount) : 0,
+                    'is_goal_completed' => $progressPercentage >= 100,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Could not update progress count.'
             ], 500);
         }
     }

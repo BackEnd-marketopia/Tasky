@@ -210,6 +210,133 @@
                             </div>
                         </div>
 
+                        <!-- Package Goal Progress Section -->
+                        @if($task->packageGoal)
+                        <div class="col-md-12 mb-4">
+                            <div class="card border-primary shadow">
+                                <div class="card-header bg-gradient-primary text-white">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <h6 class="mb-1 fw-bold">
+                                                <i class="bx bx-target-lock me-2"></i>
+                                                {{ get_label('package_goal_progress', 'Package Goal Progress') }}
+                                            </h6>
+                                            <small class="opacity-75">{{ $task->packageGoal->title }}</small>
+                                        </div>
+                                        <div class="text-end">
+                                            @php
+                                                $currentProgress = $task->progress_count ?? 0;
+                                                $targetCount = $task->packageGoal->target_count;
+                                                $progressPercentage = $targetCount > 0 ? round(($currentProgress / $targetCount) * 100, 2) : 0;
+                                            @endphp
+                                            <div class="fs-5 fw-bold">{{ $progressPercentage }}%</div>
+                                            <small class="opacity-75">{{ $currentProgress }}/{{ $targetCount }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Package Type Badge -->
+                                    <div class="mb-3">
+                                        <span class="badge rounded-pill" style="background-color: {{ $task->packageGoal->packageType->color ?? '#6B7280' }}; color: white;">
+                                            <i class="bx bx-package me-1"></i>
+                                            {{ $task->packageGoal->packageType->name ?? 'Unknown Type' }}
+                                        </span>
+                                    </div>
+
+                                    <!-- Progress Bar -->
+                                    @php
+                                        $progressColor = $progressPercentage >= 100 ? 'success' : 
+                                            ($progressPercentage >= 75 ? 'primary' : 
+                                            ($progressPercentage >= 50 ? 'info' : 
+                                            ($progressPercentage >= 25 ? 'warning' : 'danger')));
+                                    @endphp
+                                    <div class="progress mb-3" style="height: 20px;">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-{{ $progressColor }}" 
+                                             id="task-progress-bar" role="progressbar" 
+                                             style="width: {{ $progressPercentage }}%" 
+                                             aria-valuenow="{{ $progressPercentage }}" aria-valuemin="0" aria-valuemax="100">
+                                            <span class="fw-semibold">{{ $progressPercentage }}%</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Stats Cards -->
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-4">
+                                            <div class="p-3 rounded text-center" style="background-color: rgba(25, 135, 84, 0.1); border: 1px solid rgba(25, 135, 84, 0.2);">
+                                                <div class="fs-4 fw-bold" style="color: #198754;" id="current-progress">{{ $currentProgress }}</div>
+                                                <small style="color: #6c757d;">{{ get_label('current_progress', 'Current Progress') }}</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="p-3 rounded text-center" style="background-color: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.2);">
+                                                <div class="fs-4 fw-bold" style="color: #ffc107;" id="remaining-progress">{{ max(0, $targetCount - $currentProgress) }}</div>
+                                                <small style="color: #6c757d;">{{ get_label('remaining', 'Remaining') }}</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="p-3 rounded text-center" style="background-color: rgba(13, 202, 240, 0.1); border: 1px solid rgba(13, 202, 240, 0.2);">
+                                                <div class="fs-6 fw-bold" style="color: 
+                                                    @if($progressPercentage >= 100) #198754
+                                                    @elseif($progressPercentage >= 75) #0d6efd  
+                                                    @elseif($progressPercentage >= 50) #0dcaf0
+                                                    @elseif($progressPercentage >= 25) #ffc107
+                                                    @else #6c757d @endif;" id="progress-status">
+                                                    @if($progressPercentage >= 100)
+                                                        <i class="bx bx-check-circle me-1"></i>{{ get_label('completed', 'Completed') }}
+                                                    @elseif($progressPercentage >= 75)
+                                                        <i class="bx bx-trending-up me-1"></i>{{ get_label('excellent', 'Excellent') }}
+                                                    @elseif($progressPercentage >= 50)
+                                                        <i class="bx bx-trending-up me-1"></i>{{ get_label('good', 'Good') }}
+                                                    @elseif($progressPercentage >= 25)
+                                                        <i class="bx bx-time-five me-1"></i>{{ get_label('behind', 'Behind') }}
+                                                    @else
+                                                        <i class="bx bx-play-circle me-1"></i>{{ get_label('getting_started', 'Getting Started') }}
+                                                    @endif
+                                                </div>
+                                                <small style="color: #6c757d;">{{ get_label('status', 'Status') }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div class="row g-2">
+                                        <div class="col-md-8">
+                                            <div class="btn-group w-100" role="group">
+                                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="updateTaskProgress({{ $task->id }}, -1)">
+                                                    <i class="bx bx-minus"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-primary btn-sm" onclick="updateTaskProgress({{ $task->id }}, 1)">
+                                                    <i class="bx bx-plus me-1"></i>+1
+                                                </button>
+                                                <button type="button" class="btn btn-primary btn-sm" onclick="updateTaskProgress({{ $task->id }}, 5)">
+                                                    +5
+                                                </button>
+                                                <button type="button" class="btn btn-primary btn-sm" onclick="updateTaskProgress({{ $task->id }}, 10)">
+                                                    +10
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button type="button" class="btn btn-success w-100 btn-sm" onclick="showCustomProgressModal({{ $task->id }})">
+                                                <i class="bx bx-edit-alt me-1"></i>{{ get_label('custom_update', 'Custom Update') }}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Goal Description -->
+                                    @if($task->packageGoal->description)
+                                    <div class="mt-3 p-3 bg-light rounded">
+                                        <small class="text-muted">
+                                            <i class="bx bx-info-circle me-1"></i>
+                                            {{ $task->packageGoal->description }}
+                                        </small>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
                         <!-- Description Card-->
                         <div class="col-md-12 mb-4">
                             <div class="card">
@@ -895,9 +1022,170 @@
         </div>
        
     </div>
+
+    <!-- Include Task Progress Update Component -->
+    @include('components.task-progress-update')
+
+    <!-- Custom Progress Update Modal -->
+    <div class="modal fade" id="customProgressModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bx bx-edit-alt text-primary"></i>
+                        {{ get_label('update_progress', 'Update Progress') }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="customProgressForm">
+                        <input type="hidden" id="modal-task-id">
+                        <div class="mb-3">
+                            <label for="custom-progress-count" class="form-label">{{ get_label('progress_count', 'Progress Count') }}</label>
+                            <input type="number" class="form-control" id="custom-progress-count" min="0" required>
+                            <div class="form-text">
+                                <small class="text-muted">{{ get_label('enter_exact_progress', 'Enter the exact progress count') }}</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ get_label('or_add_amount', 'Or add amount') }}</label>
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-outline-primary" onclick="addToCustomProgress(1)">+1</button>
+                                <button type="button" class="btn btn-outline-primary" onclick="addToCustomProgress(5)">+5</button>
+                                <button type="button" class="btn btn-outline-primary" onclick="addToCustomProgress(10)">+10</button>
+                                <button type="button" class="btn btn-outline-primary" onclick="addToCustomProgress(25)">+25</button>
+                                <button type="button" class="btn btn-outline-primary" onclick="addToCustomProgress(50)">+50</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ get_label('cancel', 'Cancel') }}</button>
+                    <button type="button" class="btn btn-primary" onclick="submitCustomProgress()">{{ get_label('update', 'Update') }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         var label_delete = '<?= get_label('delete', 'Delete') ?>';
         var task_parent_id="{{$task->id}}";
+        
+        // Task Progress Functions
+        function updateTaskProgress(taskId, increment) {
+            $.ajax({
+                url: '/api/tasks/update-progress',
+                method: 'PATCH',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                data: {
+                    task_id: taskId,
+                    increment: increment
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Update progress display
+                        updateProgressDisplay(response.data);
+                        
+                        // Show success message
+                        toastr.success(response.message || '{{ get_label("progress_updated_successfully", "Progress updated successfully") }}');
+                    } else {
+                        toastr.error(response.message || '{{ get_label("error_updating_progress", "Error updating progress") }}');
+                    }
+                },
+                error: function() {
+                    toastr.error('{{ get_label("server_error", "Server error occurred") }}');
+                }
+            });
+        }
+        
+        function updateProgressDisplay(data) {
+            // Update progress bar
+            const percentage = data.progress_percentage;
+            const progressBar = $('#task-progress-bar');
+            progressBar.css('width', percentage + '%');
+            progressBar.attr('aria-valuenow', percentage);
+            progressBar.find('span').text(percentage + '%');
+            
+            // Update progress color
+            let progressColor = '#dc3545'; // Red
+            if (percentage >= 100) progressColor = '#198754'; // Green
+            else if (percentage >= 75) progressColor = '#0d6efd'; // Blue
+            else if (percentage >= 50) progressColor = '#0dcaf0'; // Cyan
+            else if (percentage >= 25) progressColor = '#ffc107'; // Yellow
+            
+            progressBar.removeClass('bg-success bg-primary bg-info bg-warning bg-danger');
+            progressBar.css('background-color', progressColor);
+            
+            // Update stats with colors
+            $('#current-progress').text(data.current_progress).css('color', '#198754');
+            $('#remaining-progress').text(data.remaining_count).css('color', '#ffc107');
+            
+            // Update status
+            let statusHtml = '';
+            let statusColor = '#6c757d';
+            if (percentage >= 100) {
+                statusHtml = '<i class="bx bx-check-circle me-1"></i>{{ get_label("completed", "Completed") }}';
+                statusColor = '#198754';
+            } else if (percentage >= 75) {
+                statusHtml = '<i class="bx bx-trending-up me-1"></i>{{ get_label("excellent", "Excellent") }}';
+                statusColor = '#0d6efd';
+            } else if (percentage >= 50) {
+                statusHtml = '<i class="bx bx-trending-up me-1"></i>{{ get_label("good", "Good") }}';
+                statusColor = '#0dcaf0';
+            } else if (percentage >= 25) {
+                statusHtml = '<i class="bx bx-time-five me-1"></i>{{ get_label("behind", "Behind") }}';
+                statusColor = '#ffc107';
+            } else {
+                statusHtml = '<i class="bx bx-play-circle me-1"></i>{{ get_label("getting_started", "Getting Started") }}';
+                statusColor = '#6c757d';
+            }
+            
+            const statusElement = $('#progress-status');
+            statusElement.html(statusHtml).css('color', statusColor);
+        }
+        
+        function showCustomProgressModal(taskId) {
+            $('#modal-task-id').val(taskId);
+            const currentProgress = $('#current-progress').text();
+            $('#custom-progress-count').val(currentProgress);
+            $('#customProgressModal').modal('show');
+        }
+        
+        function addToCustomProgress(amount) {
+            const currentValue = parseInt($('#custom-progress-count').val()) || 0;
+            $('#custom-progress-count').val(currentValue + amount);
+        }
+        
+        function submitCustomProgress() {
+            const taskId = $('#modal-task-id').val();
+            const newProgress = $('#custom-progress-count').val();
+            
+            $.ajax({
+                url: '/api/tasks/update-progress',
+                method: 'PATCH',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                data: {
+                    task_id: taskId,
+                    progress_count: newProgress
+                },
+                success: function(response) {
+                    if (response.success) {
+                        updateProgressDisplay(response.data);
+                        $('#customProgressModal').modal('hide');
+                        toastr.success(response.message || '{{ get_label("progress_updated_successfully", "Progress updated successfully") }}');
+                    } else {
+                        toastr.error(response.message || '{{ get_label("error_updating_progress", "Error updating progress") }}');
+                    }
+                },
+                error: function() {
+                    toastr.error('{{ get_label("server_error", "Server error occurred") }}');
+                }
+            });
+        }
     </script>
     <script src="{{asset('assets/js/pages/task-information.js')}}"></script>
     @endsection

@@ -2761,6 +2761,44 @@
                                             class="bx bx-list-ul"></i></button></a>
                             </div>
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><?= get_label('package_type', 'Package Type') ?></label>
+                            <select class="form-select packageTypeDropdown" name="package_type_id" id="package_type_dropdown"
+                                data-placeholder="<?= get_label('please_select', 'Please select') ?>">
+                                <option value=""><?= get_label('please_select', 'Please select') ?></option>
+                                @php
+                                    $workspace_id = getWorkspaceId();
+                                    $packageTypes = App\Models\PackageType::forWorkspace($workspace_id)->active()->get();
+                                @endphp
+                                @foreach ($packageTypes as $packageType)
+                                    <option value="{{ $packageType->id }}" data-color="{{ $packageType->color }}"
+                                        data-icon="{{ $packageType->icon }}">
+                                        {{ $packageType->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="mt-2">
+                                <a href="{{ url('package-types') }}"><button type="button"
+                                        class="btn btn-sm btn-primary action_manage_package_types"
+                                        data-bs-toggle="tooltip" data-bs-placement="right"
+                                        data-bs-original-title="<?= get_label('manage_package_types', 'Manage Package Types') ?>"><i
+                                            class="bx bx-package"></i></button></a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><?= get_label('package_goal', 'Package Goal') ?></label>
+                            <select class="form-select packageGoalDropdown" name="package_goal_id" id="package_goal_dropdown"
+                                data-placeholder="<?= get_label('please_select', 'Please select') ?>" disabled>
+                                <option value=""><?= get_label('please_select_package_type_first', 'Please select package type first') ?></option>
+                            </select>
+                            <div class="mt-2">
+                                <a href="{{ url('package-goals') }}"><button type="button"
+                                        class="btn btn-sm btn-primary action_manage_package_goals"
+                                        data-bs-toggle="tooltip" data-bs-placement="right"
+                                        data-bs-original-title="<?= get_label('manage_package_goals', 'Manage Package Goals') ?>"><i
+                                            class="bx bx-target"></i></button></a>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="row">
@@ -2878,6 +2916,42 @@
                             @error('completion_percentage')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
+                        </div>
+                    </div>
+
+                    <!-- Package Goal Progress Row -->
+                    <div class="row" id="package-goal-progress-section" style="display: none;">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="progress_count">
+                                {{ get_label('initial_progress_count', 'Initial Progress Count') }}
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bx bx-chart-line"></i>
+                                </span>
+                                <input type="number" class="form-control" name="progress_count" id="progress_count" 
+                                       min="0" value="0" placeholder="0">
+                                <span class="input-group-text" id="progress-max-text">/ -</span>
+                            </div>
+                            <div class="form-text" id="progress-help-text">
+                                {{ get_label('progress_count_help', 'How much progress have you already made on this goal?') }}
+                            </div>
+                            @error('progress_count')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ get_label('goal_preview', 'Goal Preview') }}</label>
+                            <div class="card bg-light border-0">
+                                <div class="card-body p-3">
+                                    <div id="selected-goal-info">
+                                        <span class="text-muted">{{ get_label('no_goal_selected', 'No goal selected') }}</span>
+                                    </div>
+                                    <div class="progress mt-2" style="height: 10px; display: none;" id="goal-progress-preview">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -3150,6 +3224,44 @@
                                         data-bs-toggle="tooltip" data-bs-placement="right"
                                         data-bs-original-title="<?= get_label('manage_priorities', 'Manage Priorities') ?>"><i
                                             class="bx bx-list-ul"></i></button></a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><?= get_label('package_type', 'Package Type') ?></label>
+                            <select class="form-select packageTypeDropdown" name="package_type_id" id="edit_package_type_id"
+                                data-placeholder="<?= get_label('please_select', 'Please select') ?>">
+                                <option value=""><?= get_label('please_select', 'Please select') ?></option>
+                                @php
+                                    $workspace_id = getWorkspaceId();
+                                    $packageTypes = App\Models\PackageType::forWorkspace($workspace_id)->active()->get();
+                                @endphp
+                                @foreach ($packageTypes as $packageType)
+                                    <option value="{{ $packageType->id }}" data-color="{{ $packageType->color }}"
+                                        data-icon="{{ $packageType->icon }}">
+                                        {{ $packageType->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <div class="mt-2">
+                                <a href="{{ url('package-types') }}"><button type="button"
+                                        class="btn btn-sm btn-primary action_manage_package_types"
+                                        data-bs-toggle="tooltip" data-bs-placement="right"
+                                        data-bs-original-title="<?= get_label('manage_package_types', 'Manage Package Types') ?>"><i
+                                            class="bx bx-package"></i></button></a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><?= get_label('package_goal', 'Package Goal') ?></label>
+                            <select class="form-select packageGoalDropdown" name="package_goal_id" id="edit_package_goal_id"
+                                data-placeholder="<?= get_label('please_select', 'Please select') ?>" disabled>
+                                <option value=""><?= get_label('please_select_package_type_first', 'Please select package type first') ?></option>
+                            </select>
+                            <div class="mt-2">
+                                <a href="{{ url('package-goals') }}"><button type="button"
+                                        class="btn btn-sm btn-primary action_manage_package_goals"
+                                        data-bs-toggle="tooltip" data-bs-placement="right"
+                                        data-bs-original-title="<?= get_label('manage_package_goals', 'Manage Package Goals') ?>"><i
+                                            class="bx bx-target"></i></button></a>
                             </div>
                         </div>
                     </div>
@@ -5191,3 +5303,175 @@
         </div>
     </div>
 </div>
+
+<script>
+$(document).ready(function() {
+    let selectedGoalData = null;
+
+    // Handle Package Type change for Task creation
+    $('#package_type_dropdown').change(function() {
+        const packageTypeId = $(this).val();
+        const packageGoalSelect = $('#package_goal_dropdown');
+        
+        if (packageTypeId) {
+            // Enable and load package goals
+            packageGoalSelect.prop('disabled', false);
+            packageGoalSelect.html('<option value="">{{ get_label("loading", "Loading...") }}</option>');
+            
+            $.ajax({
+                url: '/api/tasks/package-goals-by-type?package_type_id=' + packageTypeId,
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    let options = '<option value="">{{ get_label("please_select", "Please select") }}</option>';
+                    
+                    if (response.data && response.data.length > 0) {
+                        response.data.forEach(function(goal) {
+                            options += `<option value="${goal.id}" data-target="${goal.target_count}" data-title="${goal.title}">
+                                ${goal.title} (Target: ${goal.target_count})
+                            </option>`;
+                        });
+                    } else {
+                        options += '<option value="">{{ get_label("no_package_goals_found", "No package goals found") }}</option>';
+                    }
+                    
+                    packageGoalSelect.html(options);
+                },
+                error: function() {
+                    packageGoalSelect.html('<option value="">{{ get_label("error_loading_goals", "Error loading goals") }}</option>');
+                }
+            });
+        } else {
+            // Disable and reset package goals
+            packageGoalSelect.prop('disabled', true);
+            packageGoalSelect.html('<option value="">{{ get_label("please_select_package_type_first", "Please select package type first") }}</option>');
+            hidePackageGoalProgress();
+        }
+    });
+
+    // Handle Package Goal change
+    $('#package_goal_dropdown').change(function() {
+        const goalId = $(this).val();
+        const selectedOption = $(this).find('option:selected');
+        
+        if (goalId) {
+            selectedGoalData = {
+                id: goalId,
+                title: selectedOption.data('title'),
+                target_count: selectedOption.data('target')
+            };
+            showPackageGoalProgress(selectedGoalData);
+        } else {
+            selectedGoalData = null;
+            hidePackageGoalProgress();
+        }
+    });
+
+    // Handle Progress Count input
+    $('#progress_count').on('input', function() {
+        const value = parseInt($(this).val()) || 0;
+        
+        if (selectedGoalData) {
+            // Validate against target count
+            if (value > selectedGoalData.target_count) {
+                $(this).val(selectedGoalData.target_count);
+            }
+            if (value < 0) {
+                $(this).val(0);
+            }
+            
+            updateProgressPreview();
+        }
+    });
+
+    function showPackageGoalProgress(goalData) {
+        $('#package-goal-progress-section').show();
+        $('#progress_count').attr('max', goalData.target_count);
+        $('#progress-max-text').text('/ ' + goalData.target_count);
+        
+        // Update goal info
+        $('#selected-goal-info').html(`
+            <strong>${goalData.title}</strong><br>
+            <small class="text-muted">Target: ${goalData.target_count}</small>
+        `);
+        
+        $('#goal-progress-preview').show();
+        updateProgressPreview();
+    }
+
+    function hidePackageGoalProgress() {
+        $('#package-goal-progress-section').hide();
+        $('#progress_count').val(0);
+        $('#selected-goal-info').html('<span class="text-muted">{{ get_label("no_goal_selected", "No goal selected") }}</span>');
+        $('#goal-progress-preview').hide();
+    }
+
+    function updateProgressPreview() {
+        if (!selectedGoalData) return;
+        
+        const progressCount = parseInt($('#progress_count').val()) || 0;
+        const percentage = selectedGoalData.target_count > 0 ? 
+            (progressCount / selectedGoalData.target_count) * 100 : 0;
+        
+        const progressBar = $('#goal-progress-preview .progress-bar');
+        progressBar.css('width', percentage + '%');
+        
+        // Update color based on percentage
+        progressBar.removeClass('bg-danger bg-warning bg-info bg-primary bg-success');
+        if (percentage >= 100) {
+            progressBar.addClass('bg-success');
+        } else if (percentage >= 75) {
+            progressBar.addClass('bg-primary');
+        } else if (percentage >= 50) {
+            progressBar.addClass('bg-info');
+        } else if (percentage >= 25) {
+            progressBar.addClass('bg-warning');
+        } else {
+            progressBar.addClass('bg-danger');
+        }
+    }
+
+    // Reset form when modal is closed
+    $('#create_task_modal').on('hidden.bs.modal', function() {
+        selectedGoalData = null;
+        hidePackageGoalProgress();
+        $('#package_type_dropdown').val('').trigger('change');
+    });
+    
+    $('#edit_package_type_id').change(function() {
+        const packageTypeId = $(this).val();
+        const packageGoalSelect = $('#edit_package_goal_id');
+        
+        if (packageTypeId && packageGoalSelect.length) {
+            packageGoalSelect.prop('disabled', false);
+            packageGoalSelect.html('<option value="">{{ get_label("loading", "Loading...") }}</option>');
+            
+            $.ajax({
+                url: '/package-goals/by-type/' + packageTypeId,
+                type: 'GET',
+                success: function(response) {
+                    let options = '<option value="">{{ get_label("please_select", "Please select") }}</option>';
+                    
+                    if (response.data && response.data.length > 0) {
+                        response.data.forEach(function(goal) {
+                            options += `<option value="${goal.id}">Goal (Target: ${goal.target_count})</option>`;
+                        });
+                    } else {
+                        options += '<option value="">{{ get_label("no_package_goals_found", "No package goals found") }}</option>';
+                    }
+                    
+                    packageGoalSelect.html(options);
+                },
+                error: function() {
+                    packageGoalSelect.html('<option value="">{{ get_label("error_loading_goals", "Error loading goals") }}</option>');
+                }
+            });
+        } else if (packageGoalSelect.length) {
+            packageGoalSelect.prop('disabled', true);
+            packageGoalSelect.html('<option value="">{{ get_label("please_select_package_type_first", "Please select package type first") }}</option>');
+        }
+    });
+});
+</script>

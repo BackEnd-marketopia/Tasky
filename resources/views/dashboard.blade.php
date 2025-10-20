@@ -307,6 +307,68 @@
                     </div>
                 </div>
             </div>
+            
+            @if ($auth_user->can('manage_projects') && count($packageTypes) > 0)
+            <div class="col-md-6 col-lg-4 col-xl-4 order-0">
+                <div class="card overflow-hidden mb-4 statisticsDiv">
+                    <div class="card-header pt-3 pb-1">
+                        <div class="card-title d-flex justify-content-between mb-0">
+                            <h5 class="m-0 me-2"><?= get_label('package_statistics', 'إحصائيات الحزم') ?></h5>
+                            <div>
+                                <a href="{{ url('package-types') }}"><button type="button" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="<?= get_label('manage_package_types', 'إدارة أنواع الحزم') ?>"><i class="bx bx-package"></i></button></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body" id="package-statistics">
+                        <ul class="p-0 m-0 list-unstyled">
+                            @foreach ($packageTypes as $packageType)
+                            <?php 
+                            $packageGoal = $packageGoals->where('package_type_id', $packageType->id)->first();
+                            $completedTasks = $packageGoal ? $packageGoal->completed_tasks_count : 0;
+                            $targetCount = $packageGoal ? $packageGoal->target_count : 0;
+                            $progressPercentage = $packageGoal ? $packageGoal->completion_percentage : 0;
+                            ?>
+                            <li class="d-flex mb-3 pb-2">
+                                <div class="avatar flex-shrink-0 me-3">
+                                    <span class="avatar-initial rounded" style="background-color: {{ $packageType->color }}20;">
+                                        <i class="{{ $packageType->icon }}" style="color: {{ $packageType->color }};"></i>
+                                    </span>
+                                </div>
+                                <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                                    <div class="me-2 flex-grow-1">
+                                        <h6 class="mb-1">{{ $packageType->name }}</h6>
+                                        <div class="d-flex align-items-center">
+                                            <small class="text-muted me-2">{{ $completedTasks }}/{{ $targetCount }}</small>
+                                            <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                                                <div class="progress-bar" role="progressbar" 
+                                                     style="width: {{ $progressPercentage }}%; background-color: {{ $packageType->color }};" 
+                                                     aria-valuenow="{{ $progressPercentage }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                            <small class="fw-semibold">{{ number_format($progressPercentage, 1) }}%</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            @endforeach
+                        </ul>
+                        @if (count($packageTypes) == 0)
+                        <div class="h-100 d-flex justify-content-center align-items-center">
+                            <div class="text-center">
+                                <p class="text-muted"><?= get_label('no_package_types_found', 'لا توجد أنواع حزم') ?></p>
+                                <a href="{{ url('package-types') }}" class="btn btn-sm btn-primary">
+                                    <?= get_label('create_package_type', 'إنشاء نوع حزمة') ?>
+                                </a>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endif
+            
            @if ($auth_user->hasRole('admin'))
                     <div class="col-md-6 mb-4 mt-0">
                         <input type="hidden" id="filter_date_range_from">

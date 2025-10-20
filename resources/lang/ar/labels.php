@@ -690,4 +690,9 @@
 'meeting_assignment_sms_will_not_sent' => 'إذا كان غير نشط، فلن يتم إرسال الرسائل القصيرة الخاصة بمهمة الاجتماع',
 'text_json' => 'text/JSON',
 'formdata' => 'FormData',
+
+// Package Tracking
+'packages' => 'الحزم',
+'package_types' => 'أنواع الحزم',
+'package_goals' => 'أهداف الحزم',
 ];

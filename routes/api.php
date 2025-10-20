@@ -141,8 +141,17 @@ Route::middleware(['multiguard', 'custom-verified', 'has_workspace'])->group(fun
         Route::patch('tasks/{id}/priority', [TasksController::class, 'update_priority'])->middleware(['customcan:edit_tasks', 'log.activity', 'isApi']);
         Route::delete('/tasks/destroy/{id}', [TasksController::class, 'destroy'])->middleware(['customcan:delete_tasks', 'demo_restriction', 'checkAccess:App\Models\Task,tasks,id,tasks', 'log.activity']);
         Route::get('/tasks/{id}/status-timelines', [TasksController::class, 'get_status_timelines_api']);
+        Route::get('/tasks/package-goals-by-type', [TasksController::class, 'getPackageGoalsByType'])->middleware(['isApi']);
+        Route::get('/tasks/package-types', [TasksController::class, 'getPackageTypes'])->middleware(['isApi']);
+        Route::patch('/tasks/update-progress', [TasksController::class, 'updateProgressCount'])->middleware(['customcan:edit_tasks', 'isApi']);
 
 
+    });
+
+    // Package Goals Analytics
+    Route::prefix('package-goals')->middleware(['multiguard', 'custom-verified'])->group(function () {
+        Route::get('/analytics', [\App\Http\Controllers\PackageGoalAnalyticsController::class, 'getAnalyticsData'])->middleware(['isApi'])->name('package-goals.analytics.api');
+        Route::get('/analytics/package-type/{packageTypeId}', [\App\Http\Controllers\PackageGoalAnalyticsController::class, 'getPackageTypeAnalytics'])->middleware(['isApi']);
     });
 
     //Task Comments

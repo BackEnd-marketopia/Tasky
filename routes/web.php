@@ -47,6 +47,8 @@ use App\Http\Controllers\Auth\SignUpController;
 use App\Http\Controllers\TimeTrackerController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\NotificationsController;
+use App\Http\Controllers\PackageTypesController;
+use App\Http\Controllers\PackageGoalsController;
 use Spatie\Permission\Middlewares\RoleMiddleware;
 use App\Http\Controllers\PaymentMethodsController;
 use App\Http\Controllers\EstimatesInvoicesController;
@@ -321,6 +323,29 @@ Route::middleware(['CheckInstallation'])->group(function () {
                 Route::get('/search', [TaskListController::class, 'searchTaskLists'])->name('task-lists.search');
 
             });
+
+            //Package Types-------------------------------------------------------------
+            
+            Route::middleware(['customcan:manage_projects'])->group(function () {
+                Route::get('/package-types', [PackageTypesController::class, 'index'])->name('package_types.index');
+                Route::post('/package-types', [PackageTypesController::class, 'store'])->name('package_types.store');
+                Route::get('/package-types/{id}', [PackageTypesController::class, 'show'])->name('package_types.show');
+                Route::put('/package-types/{id}', [PackageTypesController::class, 'update'])->name('package_types.update');
+                Route::delete('/package-types/{id}', [PackageTypesController::class, 'destroy'])->name('package_types.destroy');
+                Route::get('/package-types-statistics', [PackageTypesController::class, 'statistics'])->name('package_types.statistics');
+                
+                // Package Goals
+                Route::get('/package-goals', [PackageGoalsController::class, 'index'])->name('package_goals.index');
+                Route::post('/package-goals', [PackageGoalsController::class, 'store'])->name('package_goals.store');
+                Route::get('/package-goals/analytics', [\App\Http\Controllers\PackageGoalAnalyticsController::class, 'index'])->name('package_goals.analytics');
+                Route::get('/package-goals/analytics/data', [\App\Http\Controllers\PackageGoalAnalyticsController::class, 'getAnalyticsData'])->name('package-goals.analytics.api');
+                Route::get('/package-goals/recent-activity', [\App\Http\Controllers\PackageGoalAnalyticsController::class, 'getRecentActivity'])->name('package-goals.recent-activity');
+                Route::get('/package-goals/by-type/{packageTypeId}', [PackageGoalsController::class, 'getByPackageType'])->name('package_goals.by_type');
+                Route::get('/package-goals/{id}', [PackageGoalsController::class, 'show'])->name('package_goals.show');
+                Route::put('/package-goals/{id}', [PackageGoalsController::class, 'update'])->name('package_goals.update');
+                Route::delete('/package-goals/{id}', [PackageGoalsController::class, 'destroy'])->name('package_goals.destroy');
+            });
+
             //Tasks-------------------------------------------------------------
 
             Route::middleware(['customcan:manage_tasks'])->group(function () {
