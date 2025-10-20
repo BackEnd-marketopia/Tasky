@@ -5319,11 +5319,8 @@ $(document).ready(function() {
             packageGoalSelect.html('<option value="">{{ get_label("loading", "Loading...") }}</option>');
             
             $.ajax({
-                url: '/api/tasks/package-goals-by-type?package_type_id=' + packageTypeId,
+                url: '/package-goals/by-type/' + packageTypeId,
                 type: 'GET',
-                headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
-                },
                 success: function(response) {
                     let options = '<option value="">{{ get_label("please_select", "Please select") }}</option>';
                     
@@ -5456,7 +5453,7 @@ $(document).ready(function() {
                     
                     if (response.data && response.data.length > 0) {
                         response.data.forEach(function(goal) {
-                            options += `<option value="${goal.id}">Goal (Target: ${goal.target_count})</option>`;
+                            options += `<option value="${goal.id}">${goal.title} (Target: ${goal.target_count})</option>`;
                         });
                     } else {
                         options += '<option value="">{{ get_label("no_package_goals_found", "No package goals found") }}</option>';

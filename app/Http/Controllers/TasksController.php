@@ -2796,7 +2796,7 @@ class TasksController extends Controller
             }
 
             $packageGoals = \App\Models\PackageGoal::where('package_type_id', $packageTypeId)
-                ->where('workspace_id', getWorkspaceId())
+                ->where('workspace_id', $this->workspace->id)
                 ->where('is_active', true)
                 ->with('packageType')
                 ->get()
@@ -2833,7 +2833,7 @@ class TasksController extends Controller
     public function getPackageTypes(Request $request)
     {
         try {
-            $packageTypes = \App\Models\PackageType::where('workspace_id', getWorkspaceId())
+            $packageTypes = \App\Models\PackageType::where('workspace_id', $this->workspace->id)
                 ->where('is_active', true)
                 ->orderBy('name', 'asc')
                 ->get()

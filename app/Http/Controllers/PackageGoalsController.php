@@ -255,8 +255,9 @@ class PackageGoalsController extends Controller
 
             $packageGoals = PackageGoal::where('package_type_id', $packageTypeId)
                 ->where('workspace_id', $this->workspace->id)
+                ->where('is_active', true)
                 ->orderBy('id', 'desc')
-                ->get(['id', 'target_count', 'description']);
+                ->get(['id', 'title', 'target_count', 'description']);
 
             return response()->json([
                 'error' => false,
