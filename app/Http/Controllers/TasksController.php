@@ -376,7 +376,7 @@ class TasksController extends Controller
     }
     public function get($id)
     {
-        $task = Task::with('users','reminders','recurringTask')->findOrFail($id);
+        $task = Task::with(['users','reminders','recurringTask','packageGoal.packageType'])->findOrFail($id);
         $project = $task->project()->with(relations: 'users')->firstOrFail();
         // $recursionSettings = RecurringTask::with('users')->findOrFail($id);
         return response()->json(['error' => false, 'task' => $task, 'project' => $project]);
@@ -512,6 +512,7 @@ class TasksController extends Controller
             'billing_type' => 'nullable|in:none,billable,non-billable',
             'completion_percentage' => ['nullable', 'integer', 'min:0', 'max:100', 'in:0,10,20,30,40,50,60,70,80,90,100'],
             'task_list_id' => 'nullable|exists:task_lists,id',
+            'package_goal_id' => 'nullable|exists:package_goals,id',
         ];
         $messages = [
             'status_id.required' => 'The status field is required.'
@@ -546,6 +547,7 @@ class TasksController extends Controller
                 'billing_type'=>$request->input('billing_type','non-billable'),
                 'completion_percentage'=>$request->input('completion_percentage',0),
                 'task_list_id' => $request->input('task_list_id'),
+                'package_goal_id' => $request->input('package_goal_id'),
             ];
             // Handle start_date
             if ($request->filled('start_date')) {

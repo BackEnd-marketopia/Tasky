@@ -3267,11 +3267,19 @@ $(document).on("click", ".edit-task", function () {
             $("#title").val(response.task.title);
             $("#task_status_id").val(response.task.status_id).trigger("change");
             $("#priority_id").val(response.task.priority_id).trigger("change");
-            // Set package type if available
-            if (response.task.package_type_id) {
-                $("#update_package_type_id").val(response.task.package_type_id).trigger("change");
+            // Set package goal and type if available
+            if (response.task.package_goal_id && response.task.package_goal) {
+                // First set the package type to load its goals
+                const packageTypeId = response.task.package_goal.package_type_id;
+                $("#edit_package_type_id").val(packageTypeId).trigger("change");
+                
+                // Set package goal after package type is loaded
+                setTimeout(function() {
+                    $("#edit_package_goal_id").val(response.task.package_goal_id).trigger("change");
+                }, 1000); // Wait for package goals to load
             } else {
-                $("#update_package_type_id").val('').trigger("change");
+                $("#edit_package_type_id").val('').trigger("change");
+                $("#edit_package_goal_id").val('').trigger("change");
             }
             // Initialize task list select2
             var editTaskList = $("#edit_task_list");

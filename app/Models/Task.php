@@ -160,6 +160,18 @@ class Task extends Model implements HasMedia
     {
         return $this->belongsTo(PackageGoal::class);
     }
+    
+    public function packageType()
+    {
+        return $this->hasOneThrough(
+            PackageType::class,
+            PackageGoal::class,
+            'id', // Foreign key on package_goals table
+            'id', // Foreign key on package_types table
+            'package_goal_id', // Local key on tasks table
+            'package_type_id' // Local key on package_goals table
+        );
+    }
 
     /**
      * Get progress percentage for this task based on package goal
